@@ -8,11 +8,13 @@ from quant_regime.detectors.rules import detect_regime
 from quant_regime.io import load_config, load_series_csv
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Detect market regime from index series")
-    parser.add_argument("--config", required=True, help="Path to YAML config")
-    parser.add_argument("--out", required=True, help="Output JSON path")
-    args = parser.parse_args()
+    sub = parser.add_subparsers(dest="command", required=True)
+    detect = sub.add_parser("detect", help="Run regime detection")
+    detect.add_argument("--config", required=True, help="Path to YAML config")
+    detect.add_argument("--out", required=True, help="Output JSON path")
+    args = parser.parse_args(argv)
 
     cfg = load_config(Path(args.config))
     input_cfg = cfg.get("input") or {}
