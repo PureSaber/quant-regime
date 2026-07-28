@@ -1,0 +1,14 @@
+input:
+  path: tests/fixtures/index_series.csv
+  date_col: date
+  value_col: close
+
+rules:
+  vol_window: 20
+  vol_lookback: 60
+  vol_percentile_threshold: 0.8
+  return_window: 20
+  risk_off_return: -0.05
+  high_vol_scale: 0.5
+  risk_off_scale: 0.3
+  risk_on_scale: 1.0
