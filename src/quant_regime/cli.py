@@ -4,9 +4,9 @@ import argparse
 import json
 from pathlib import Path
 
+from quant_regime.cross_asset import detect_cross_asset, load_multi_config
 from quant_regime.detectors.rules import detect_regime
 from quant_regime.io import load_config, load_series_csv
-from quant_regime.cross_asset import detect_cross_asset, load_multi_config
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -31,11 +31,22 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     cfg = load_config(Path(args.config))
+    config_path = Path(args.config).resolve()
     input_cfg = cfg.get("input") or {}
     rules_cfg = cfg.get("rules") or {}
 
+    input_path = Path(input_cfg["path"])
+    if not input_path.is_absolute():
+        for base in (config_path.parent, config_path.parent.parent):
+            candidate = (base / input_path).resolve()
+            if candidate.is_file():
+                input_path = candidate
+                break
+        else:
+            input_path = (config_path.parent.parent / input_path).resolve()
+
     series = load_series_csv(
-        Path(input_cfg["path"]),
+        input_path,
         date_col=str(input_cfg.get("date_col", "date")),
         value_col=str(input_cfg.get("value_col", "close")),
     )
