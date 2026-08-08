@@ -14,6 +14,7 @@ from quant_regime.models import RegimeLabel
 class CrossAssetRegime:
     as_of: str
     position_scale: float
+    factor_gate: float
     regime: RegimeLabel
     legs: dict[str, dict]
 
@@ -21,6 +22,7 @@ class CrossAssetRegime:
         return {
             "as_of": self.as_of,
             "position_scale": self.position_scale,
+            "factor_gate": self.factor_gate,
             "regime": self.regime.value,
             "legs": self.legs,
         }
@@ -72,6 +74,7 @@ def detect_cross_asset(inputs: list[dict], rules: dict) -> CrossAssetRegime:
     return CrossAssetRegime(
         as_of=max(as_ofs),
         position_scale=round(combined_scale, 4),
+        factor_gate=round(combined_scale, 4),
         regime=combined_regime,
         legs=legs,
     )
