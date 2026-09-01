@@ -1,6 +1,8 @@
 # quant-regime
 
-Rule-based market regime detector (risk_on / risk_off / high_vol).
+Rule-based market regime detector for research, backtesting, and paper-trading workflows (`risk_on` / `risk_off` / `high_vol`).
+
+The detector consumes configured market features and emits deterministic regime state plus a position-scaling recommendation. It is not a price forecaster, exchange-grade risk system, live broker adapter, or order-routing component.
 
 ## Commands
 
@@ -13,3 +15,5 @@ pytest -q
 ## Output
 
 JSON with `regime`, `position_scale`, and diagnostic `signals`.
+
+Downstream systems must treat the output as research metadata. Any portfolio or paper-trading consumer remains responsible for its own validation and risk gates; this repository never sends real orders.
