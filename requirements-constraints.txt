@@ -1,0 +1,2 @@
+# QDK cross-interpreter compatibility: Python 3.10 wheels.
+rpds-py<0.31
