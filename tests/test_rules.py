@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 
+from quant_regime.cli import main
 from quant_regime.detectors.rules import detect_regime
 from quant_regime.models import RegimeLabel
 
@@ -40,3 +42,32 @@ def test_high_vol_on_spiky_returns():
     )
     assert result.regime == RegimeLabel.HIGH_VOL
     assert result.position_scale == 0.5
+
+
+def test_insufficient_history_is_not_reported_as_risk_on():
+    close = pd.Series([100.0], index=[pd.Timestamp("2026-01-02")])
+    with pytest.raises(
+        ValueError,
+        match="insufficient history: need at least 272 observations, got 1",
+    ):
+        detect_regime(close)
+
+
+def test_custom_windows_define_the_required_history():
+    close = _trend_series(n=5)
+    with pytest.raises(ValueError, match="need at least 5 observations, got 4"):
+        detect_regime(close.iloc[:-1], vol_window=2, vol_lookback=3, return_window=2)
+    result = detect_regime(close, vol_window=2, vol_lookback=3, return_window=2)
+    assert result.regime in set(RegimeLabel)
+
+
+def test_cli_failure_preserves_existing_output(tmp_path):
+    source = tmp_path / "one.csv"
+    source.write_text("date,close\n2026-01-02,100\n", encoding="utf-8")
+    config = tmp_path / "config.yaml"
+    config.write_text(f"input:\n  path: {source.as_posix()}\nrules: {{}}\n", encoding="utf-8")
+    output = tmp_path / "regime.json"
+    output.write_text('{"status": "previous"}', encoding="utf-8")
+    with pytest.raises(ValueError, match="insufficient history"):
+        main(["detect", "--config", str(config), "--out", str(output)])
+    assert output.read_text(encoding="utf-8") == '{"status": "previous"}'
