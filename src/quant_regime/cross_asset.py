@@ -48,7 +48,12 @@ def detect_cross_asset(inputs: list[dict], rules: dict) -> CrossAssetRegime:
             date_col=str(entry.get("date_col", "date")),
             value_col=str(entry.get("value_col", "close")),
         )
-        result = detect_regime(series, **{k: v for k, v in rules.items() if k not in ("asset_class_weights", "default_weight")})
+        result = detect_regime(
+            series,
+            **{
+                k: v for k, v in rules.items() if k not in ("asset_class_weights", "default_weight")
+            },
+        )
         weight = float(asset_class_weights.get(entry.get("asset_class", name), default_weight))
         legs[name] = {
             "regime": result.regime.value,

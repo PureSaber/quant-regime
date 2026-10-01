@@ -7,7 +7,7 @@ from quant_regime.models import RegimeLabel, RegimeResult
 
 
 def _realized_vol(close: pd.Series, window: int) -> pd.Series:
-    ret = close.pct_change()
+    ret = close.pct_change(fill_method=None)
     return ret.rolling(window).std() * np.sqrt(252)
 
 
@@ -29,14 +29,28 @@ def detect_regime(
 ) -> RegimeResult:
     if close.empty:
         raise ValueError("close series is empty")
+    for name, value, minimum in (
+        ("vol_window", vol_window, 2),
+        ("vol_lookback", vol_lookback, 1),
+        ("return_window", return_window, 1),
+    ):
+        if type(value) is not int or value < minimum:
+            raise ValueError(f"{name} must be an integer >= {minimum}")
 
     close = close.sort_index()
+    required = max(vol_window + vol_lookback, return_window + 1)
+    if len(close) < required:
+        raise ValueError(
+            f"insufficient history: need at least {required} observations, got {len(close)}"
+        )
     as_of = close.index[-1].strftime("%Y-%m-%d")
     vol = _realized_vol(close, vol_window)
     vol_pct = _rolling_percentile(vol, vol_lookback)
-    latest_vol_pct = float(vol_pct.iloc[-1]) if not np.isnan(vol_pct.iloc[-1]) else 0.0
+    latest_vol_pct = float(vol_pct.iloc[-1])
 
-    window_return = float(close.iloc[-1] / close.iloc[-return_window - 1] - 1.0) if len(close) > return_window else 0.0
+    window_return = float(close.iloc[-1] / close.iloc[-return_window - 1] - 1.0)
+    if not np.isfinite([latest_vol_pct, window_return]).all():
+        raise ValueError("insufficient usable history for regime signals")
 
     if latest_vol_pct >= vol_percentile_threshold:
         regime = RegimeLabel.HIGH_VOL
