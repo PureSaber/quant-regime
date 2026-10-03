@@ -29,6 +29,15 @@ def detect_regime(
 ) -> RegimeResult:
     if close.empty:
         raise ValueError("close series is empty")
+    if (
+        not isinstance(close.index, pd.DatetimeIndex)
+        or close.index.hasnans
+        or close.index.has_duplicates
+    ):
+        raise ValueError("close dates must be valid and unique")
+    close = pd.to_numeric(close, errors="raise").astype(float)
+    if not np.isfinite(close.to_numpy()).all() or (close <= 0).any():
+        raise ValueError("close prices must be finite, positive and complete")
     for name, value, minimum in (
         ("vol_window", vol_window, 2),
         ("vol_lookback", vol_lookback, 1),

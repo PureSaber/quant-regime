@@ -13,9 +13,9 @@ def load_series_csv(path: Path, date_col: str, value_col: str) -> pd.Series:
     if value_col not in df.columns:
         raise ValueError(f"missing value column {value_col!r} in {path}")
     dates = pd.to_datetime(df[date_col])
-    values = pd.to_numeric(df[value_col], errors="coerce")
+    values = pd.to_numeric(df[value_col], errors="raise")
     series = pd.Series(values.values, index=dates).sort_index()
-    return series.dropna()
+    return series
 
 
 def load_config(path: Path) -> dict:
