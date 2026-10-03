@@ -71,3 +71,39 @@ def test_cli_failure_preserves_existing_output(tmp_path):
     with pytest.raises(ValueError, match="insufficient history"):
         main(["detect", "--config", str(config), "--out", str(output)])
     assert output.read_text(encoding="utf-8") == '{"status": "previous"}'
+
+
+@pytest.mark.parametrize("value", [np.nan, np.inf, -np.inf, 0.0, -1.0])
+def test_invalid_early_price_is_rejected_even_outside_signal_window(value):
+    close = _trend_series()
+    close.iloc[10] = value
+    with pytest.raises(ValueError, match="finite, positive and complete"):
+        detect_regime(close, vol_lookback=60)
+
+
+@pytest.mark.parametrize("case", ["missing", "duplicate", "invalid_date", "nonnumeric"])
+def test_cli_rejects_bad_history_without_dropping_rows_or_replacing_output(tmp_path, case):
+    close = _trend_series()
+    frame = pd.DataFrame({"date": close.index, "close": close.to_numpy()})
+    if case == "missing":
+        frame.loc[10, "close"] = np.nan
+    elif case == "duplicate":
+        frame = pd.concat([frame, frame.iloc[[10]]], ignore_index=True)
+    elif case == "invalid_date":
+        frame.loc[10, "date"] = pd.NaT
+    else:
+        frame["close"] = frame["close"].astype(object)
+        frame.loc[10, "close"] = "not-a-price"
+    source = tmp_path / "prices.csv"
+    frame.to_csv(source, index=False)
+    config = tmp_path / "config.yaml"
+    config.write_text(
+        f"input:\n  path: {source.as_posix()}\nrules: {{vol_lookback: 60}}\n", encoding="utf-8"
+    )
+    output = tmp_path / "regime.json"
+    original = b'{"status": "previous"}'
+    output.write_bytes(original)
+
+    with pytest.raises(ValueError):
+        main(["detect", "--config", str(config), "--out", str(output)])
+    assert output.read_bytes() == original
