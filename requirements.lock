@@ -1,0 +1,30 @@
+# Verified Windows / CPython 3.12 environment; runtime + dev + build requirements.
+# Source versions: engineering acceptance 2026-10-09, rebuilt in a clean venv.
+# Install with --no-deps; then install this repository --no-deps --no-build-isolation.
+attrs==26.1.0
+colorama==0.4.6
+duckdb==1.5.6
+iniconfig==2.3.1
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+jsonschema_rs==0.58.6
+numpy==2.2.6
+orjson==3.13.0
+packaging==26.3
+pandas==2.3.3
+pluggy==1.6.0
+pyarrow==26.0.0
+Pygments==2.21.0
+pytest==9.1.1
+python-dateutil==2.9.0.post0
+pytz==2026.5
+PyYAML==6.0.3
+quant-data-kit @ git+https://github.com/PureSaber/quant-data-kit.git@271a65ee383158b3dd7570e19a3f2b4123f09f79
+referencing==0.37.0
+rpds-py==0.30.0
+ruff==0.16.10
+setuptools==84.0.0
+six==1.17.0
+typing_extensions==4.16.0
+tzdata==2026.5
+websockets==15.0.1
