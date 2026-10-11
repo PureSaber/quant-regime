@@ -1,5 +1,13 @@
 # quant-regime
 
+Frozen train/test state performance, switching costs, stability and macro vintage
+linkage are available in [`quant_regime.evaluation`](docs/EVALUATION.md).
+Run `python examples/evaluate_states.py` for the explicitly synthetic example.
+
+[Macro-change/cross-asset linkage research](docs/MACRO_LINKAGE.md) provides frozen
+per-asset OLS, matched OOS forecast baselines, release/revision lineage and coverage.
+Run `python examples/macro_asset_linkage.py NEW_OUTPUT` for the independent synthetic controls.
+
 Rule-based market regime detector for research, backtesting, and paper-trading workflows (`risk_on` / `risk_off` / `high_vol`).
 
 The detector consumes configured market features and emits deterministic regime state plus a position-scaling recommendation. It is not a price forecaster, exchange-grade risk system, live broker adapter, or order-routing component.
